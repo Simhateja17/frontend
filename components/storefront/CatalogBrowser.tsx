@@ -8,6 +8,7 @@ import { localProductImage } from "@/lib/productImage";
 import ForYouRow from "./memory/ForYouRow";
 import WelcomeCard from "./memory/WelcomeCard";
 import MemoryNotice from "./memory/MemoryNotice";
+import OfferBanner from "./memory/OfferBanner";
 
 const ICONS: Record<string, string> = { "Personal Audio": "♫", "Home Audio": "♫", "Power & Cables": "ϟ", Computing: "⌨", Wearables: "◷", "Smart Home": "⌂" };
 
@@ -71,6 +72,7 @@ export default function CatalogBrowser({ onAsk, onOpenMemory, onOpenCart }: {
       <ForYouRow title="You might also like" onSelect={select} refreshKey={browsingVariantId} limit={6} />
     </> : <>
       <MemoryNotice onManage={onOpenMemory} />
+      <OfferBanner onOpenCart={onOpenCart} />
       <WelcomeCard onSelect={select} onOpenCart={onOpenCart} />
       <p className="text-xs uppercase tracking-widest text-accent">Cartisan / The connected shop</p><h1 className="text-3xl font-semibold tracking-tight mt-2">Find your next everyday essential.</h1><p className="text-sm text-ink-muted mt-2 mb-5">Browse the collection. Ask your assistant to compare, find a better price, or help you choose.</p>
       <div className="flex flex-wrap gap-2 mb-4"><input aria-label="Search products" placeholder="Search products or brands" value={query} onChange={e => setQuery(e.target.value)} className="min-w-0 flex-1 basis-48 border border-border rounded-lg px-3 py-2 bg-white" /><select aria-label="Category" value={category} onChange={e => setCategory(e.target.value)} className="max-w-full border border-border rounded-lg pl-3 pr-8 py-2 bg-white bg-no-repeat appearance-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23767671' stroke-width='1.6'%3E%3Cpath d='M5.5 7.5 10 12l4.5-4.5'/%3E%3C/svg%3E\")", backgroundPosition: "right 0.6rem center", backgroundSize: "14px" }}><option value="">All categories</option>{categories.map(c => <option key={c}>{c}</option>)}</select><select aria-label="Sort products" value={sort} onChange={e => setSort(e.target.value)} className="border border-border rounded-lg pl-3 pr-8 py-2 bg-white bg-no-repeat appearance-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23767671' stroke-width='1.6'%3E%3Cpath d='M5.5 7.5 10 12l4.5-4.5'/%3E%3C/svg%3E\")", backgroundPosition: "right 0.6rem center", backgroundSize: "14px" }}><option value="default">Featured order</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></div>

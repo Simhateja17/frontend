@@ -15,7 +15,7 @@ import {
   RenderedComponent,
   StagedCheckout,
 } from "@/lib/types";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, type DecisionReason } from "@/lib/api";
 import { uid } from "@/lib/format";
 import { preloadProductImages } from "@/lib/productImage";
 import { roleFromMetadata } from "@/lib/role-surface";
@@ -126,7 +126,8 @@ interface AppState {
   changes: MerchantChange[];
   decisionError: string | null;
   sendMerchantMessage: (text: string) => Promise<void>;
-  decideChange: (id: string, decision: "approved" | "rejected") => Promise<void>;
+  decideChange: (id: string, decision: "approved" | "rejected", reasonCode?: DecisionReason) => Promise<void>;
+  refreshChanges: () => Promise<void>;
 
   // evidence — this principal's own ledger rows, newest first, scoped to this
   // demo run so a judge sees this session and not every session that ever ran.
@@ -977,11 +978,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
    * shown rather than swallowed, because it tells the operator what to do next.
    */
   const decideChange = useCallback(
-    async (id: string, decision: "approved" | "rejected") => {
+    async (id: string, decision: "approved" | "rejected", reasonCode?: DecisionReason) => {
       if (!session) return;
       setDecisionError(null);
       try {
-        const updated = await api.decideChange(id, decision);
+        const updated = await api.decideChange(id, decision, undefined, reasonCode);
         setChanges((s) => s.map((c) => (c.id === id ? updated : c)));
         setBackendError(null);
       } catch (e) {
@@ -1042,6 +1043,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     decisionError,
     sendMerchantMessage,
     decideChange,
+    refreshChanges,
     evidence,
     refreshEvidence,
   };

@@ -9,6 +9,8 @@ import ApprovalQueue from "@/components/portal/ApprovalQueue";
 import MerchantComponent from "@/components/portal/MerchantComponent";
 import ConversationSwitcher from "@/components/storefront/ConversationSwitcher";
 import RoleGate from "@/components/shared/RoleGate";
+import StoreMemoryPanel from "@/components/portal/StoreMemoryPanel";
+import { useState } from "react";
 
 // Openers that match what the merchant surface can actually do: read the store's own
 // records, and queue a change for approval. "Fashion pricing" was a legacy catalogue.
@@ -57,17 +59,22 @@ export default function PortalPage() {
     selectMerchantChat,
     portalTurnActive,
   } = useAppState();
+  const [memoryOpen, setMemoryOpen] = useState(false);
   const empty = portalMessages.length === 0;
   const scrollRef = useAutoScroll(portalMessages);
 
   return (
     <RoleGate role="merchant_operator">
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <KpiStrip snapshot={snapshot} />
       <div className="flex-1 min-h-0 flex">
         <main className="flex-1 min-w-0 flex flex-col bg-bg">
           <div className="flex-none px-6 pt-3">
-            <div className="max-w-[720px] mx-auto flex items-center justify-end">
+            <div className="max-w-[720px] mx-auto flex items-center justify-end gap-2">
+              <button onClick={() => setMemoryOpen(true)}
+                className="border border-border rounded-md px-2.5 py-1.5 text-[12px] text-ink-muted hover:border-accent hover:text-accent transition-colors">
+                ✦ Recovery &amp; lessons
+              </button>
               <ConversationSwitcher
                 conversations={portalChatHistory}
                 activeConversationId={merchantConversationId}
@@ -115,6 +122,7 @@ export default function PortalPage() {
         </main>
         <ApprovalQueue />
       </div>
+      {memoryOpen && <StoreMemoryPanel onClose={() => setMemoryOpen(false)} />}
     </div>
     </RoleGate>
   );

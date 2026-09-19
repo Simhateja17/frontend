@@ -22,12 +22,21 @@ export default function MemoryPanel({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [confirmingForget, setConfirmingForget] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [emailOptIn, setEmailOptIn] = useState<boolean | null>(null);
 
   const load = useCallback(() => {
     api.memoryPanel().then(d => { setData(d); setError(null); })
       .catch(e => setError(e instanceof Error ? e.message : "Could not load your memory"));
   }, []);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    api.marketingConsent().then(c => setEmailOptIn(c.email_opt_in)).catch(() => setEmailOptIn(null));
+  }, []);
+  const toggleEmail = async (next: boolean) => {
+    setEmailOptIn(next);
+    try { setEmailOptIn((await api.setMarketingConsent(next)).email_opt_in); }
+    catch { setEmailOptIn(!next); setError("Could not update your email preference"); }
+  };
 
   const removeFact = async (id: string) => {
     setBusy(true);
@@ -119,6 +128,18 @@ export default function MemoryPanel({ onClose }: { onClose: () => void }) {
             <ul className="text-[13px] text-ink-muted list-disc pl-4 flex flex-col gap-1">
               {data.notes.map((note, i) => <li key={i}>{note}</li>)}
             </ul>
+          </section>
+        )}
+
+        {emailOptIn !== null && (
+          <section className="mt-5 rounded-lg border border-border-soft px-3 py-2.5">
+            <label className="flex items-start gap-2.5 text-sm">
+              <input type="checkbox" checked={emailOptIn} onChange={e => toggleEmail(e.target.checked)} className="mt-1" />
+              <span>
+                Email me offers on items I leave in my cart
+                <span className="block text-[11px] text-ink-muted">Separate from memory. Unsubscribe any time from the email itself.</span>
+              </span>
+            </label>
           </section>
         )}
 

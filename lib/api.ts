@@ -325,10 +325,11 @@ export const api = {
   // Approving is also the instruction to apply. The server re-reads the record and
   // re-checks the bounds first, so this can come back 409 with the reason — a stale
   // proposal or a bound that no longer holds. Nothing is written in that case.
-  decideChange: (changeId: string, decision: "approved" | "rejected", note?: string) =>
+  decideChange: (changeId: string, decision: "approved" | "rejected", note?: string,
+                 reasonCode?: DecisionReason) =>
     req<MerchantChange>(`/portal/changes/${encodeURIComponent(changeId)}/decision`, {
       method: "POST",
-      body: JSON.stringify({ decision, note: note ?? null }),
+      body: JSON.stringify({ decision, note: note ?? null, reason_code: reasonCode ?? null }),
     }),
 
   // The evidence ledger. `/audit` and the flat table behind it are gone: they could
@@ -412,6 +413,24 @@ export const api = {
     req<{ items: MemorySuggestion[]; basis: "memory" | "no_history" }>(
       `/memory/suggestions?limit=${limit}`, { credentials: "include" }),
   memoryWelcome: () => req<{ card: WelcomeCard | null }>("/memory/welcome", { credentials: "include" }),
+  // Cart recovery (customer side): the live offer for the banner, and the separate,
+  // explicit consent to offer emails.
+  memoryOffer: () => req<{ offer: RecoveryOfferView | null }>("/memory/offer"),
+  marketingConsent: () => req<{ email_opt_in: boolean }>("/me/marketing-consent"),
+  setMarketingConsent: (optIn: boolean) =>
+    req<{ email_opt_in: boolean }>("/me/marketing-consent", {
+      method: "PUT", body: JSON.stringify({ email_opt_in: optIn }),
+    }),
+
+  // Cart recovery and merchant memory (operator side). Proposing a policy only queues
+  // it; the approval queue is still where it becomes real.
+  recoveryPolicy: () => req<RecoveryPolicyView>("/portal/recovery-policy"),
+  proposeRecoveryPolicy: (policy: RecoveryPolicyTerms & { rationale?: string }) =>
+    req<MerchantChange>("/portal/recovery-policy", { method: "POST", body: JSON.stringify(policy) }),
+  portalMemory: () => req<{ facts: MemoryFactView[] }>("/portal/memory"),
+  portalMemoryDelete: (factId: string) =>
+    req<{ deleted: boolean }>(`/portal/memory/facts/${encodeURIComponent(factId)}`, { method: "DELETE" }),
+
   chatFeedback: (conversationId: string, rating: "up" | "down", reason?: FeedbackReason) =>
     req<{ id: string }>("/chat/feedback", {
       method: "POST",
@@ -475,3 +494,41 @@ function query(params: Record<string, string | number | undefined | null>): stri
 }
 
 export { ApiError };
+
+export type DecisionReason = "margin_too_low" | "bad_timing" | "brand_policy" | "stock_risk" | "other";
+
+export interface RecoveryOfferView {
+  offer_id: string;
+  kind: "coupon" | "reminder";
+  code: string | null;
+  discount_percentage: number | null;
+  max_discount_minor: number | null;
+  expires_at: string;
+  headline: { variant_id: string; title: string; price_minor: number } | null;
+}
+
+export interface RecoveryPolicyTerms {
+  abandon_after_minutes: number;
+  min_cart_minor: number;
+  discount_percentage: number;
+  max_discount_minor: number;
+  cooldown_days: number;
+  monthly_budget_minor: number;
+  offer_valid_hours: number;
+}
+
+export interface RecoveryPolicyView {
+  active: (RecoveryPolicyTerms & { id: string; created_at: string }) | null;
+  stats: {
+    window_days: number;
+    offers_issued: number;
+    offers_redeemed: number;
+    coupons: number;
+    reminders: number;
+    recovered_revenue_minor: number;
+    discount_given_minor: number;
+    paid_orders: number;
+    redemption_rate: number;
+  };
+  bounds: Record<string, number>;
+}

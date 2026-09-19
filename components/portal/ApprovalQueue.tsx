@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useAppState } from "@/lib/store/AppState";
+import type { DecisionReason } from "@/lib/api";
 import { MerchantChange, MerchantChangeStatus } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
 
@@ -17,7 +19,17 @@ import { formatMinor } from "@/lib/format";
  * had moved or a bound no longer held. Hiding that would leave an operator believing
  * they had changed something they had not.
  */
-const MONEY_KEYS = new Set(["amount_minor", "budget_minor", "min_subtotal_minor"]);
+const MONEY_KEYS = new Set(["amount_minor", "budget_minor", "min_subtotal_minor",
+  "min_cart_minor", "max_discount_minor", "monthly_budget_minor"]);
+
+// Why, in a word the assistant can learn from. Optional; it never decides anything.
+const REASONS: { code: DecisionReason; label: string }[] = [
+  { code: "margin_too_low", label: "Margin too low" },
+  { code: "bad_timing", label: "Bad timing" },
+  { code: "brand_policy", label: "Brand policy" },
+  { code: "stock_risk", label: "Stock risk" },
+  { code: "other", label: "Other" },
+];
 
 function fmtValue(key: string, value: unknown): string {
   if (value === null || value === undefined) return "—";
@@ -47,6 +59,7 @@ const BADGE: Record<MerchantChangeStatus, { text: string; tone: string }> = {
 
 function Row({ item }: { item: MerchantChange }) {
   const { decideChange } = useAppState();
+  const [reason, setReason] = useState<DecisionReason | undefined>(undefined);
   const pending = item.status === "pending";
   const badge = BADGE[item.status];
   const note = item.approvals[item.approvals.length - 1]?.note;
@@ -93,15 +106,28 @@ function Row({ item }: { item: MerchantChange }) {
       {note && <p className="m-0 text-[11px] text-ink-faint leading-relaxed">Note: {note}</p>}
 
       {pending && (
+        <div className="flex flex-wrap gap-1" aria-label="Reason (optional)">
+          {REASONS.map(({ code, label }) => (
+            <button key={code} onClick={() => setReason(reason === code ? undefined : code)}
+              aria-pressed={reason === code}
+              className={`text-[10.5px] rounded-full border px-2 py-0.5 transition-colors ${
+                reason === code ? "border-accent text-accent bg-success-bg" : "border-border text-ink-muted hover:border-accent"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {pending && (
         <div className="flex gap-2 mt-1">
           <button
-            onClick={() => decideChange(item.id, "approved")}
+            onClick={() => decideChange(item.id, "approved", reason)}
             className="flex-1 bg-accent text-white text-[12.5px] font-medium rounded-md py-1.5 hover:bg-accent-hover transition-colors"
           >
             Approve
           </button>
           <button
-            onClick={() => decideChange(item.id, "rejected")}
+            onClick={() => decideChange(item.id, "rejected", reason)}
             className="flex-1 bg-white border border-border text-ink text-[12.5px] rounded-md py-1.5 hover:bg-bg transition-colors"
           >
             Reject
