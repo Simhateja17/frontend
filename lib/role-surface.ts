@@ -58,3 +58,13 @@ export function redirectForRole(role: AppRole, pathname: string): string | null 
   }
   return null;
 }
+
+export type PaytmPlan = "pos" | "payments";
+
+/** Which Paytm products the merchant runs, from the same Supabase app metadata as the
+ * role. Display only: the backend holds the stock tools for a payments-only merchant. */
+export function paytmPlanFromMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+): PaytmPlan {
+  return metadata?.paytm_plan === "payments" ? "payments" : "pos";
+}

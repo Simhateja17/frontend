@@ -10,6 +10,8 @@ import MerchantComponent from "@/components/portal/MerchantComponent";
 import ConversationSwitcher from "@/components/storefront/ConversationSwitcher";
 import RoleGate from "@/components/shared/RoleGate";
 import StoreMemoryPanel from "@/components/portal/StoreMemoryPanel";
+import PaytmPlanBanner from "@/components/portal/PaytmPlanBanner";
+import { paytmPlanFromMetadata } from "@/lib/role-surface";
 import { useState } from "react";
 
 // Openers that match what the merchant surface can actually do: read the store's own
@@ -48,6 +50,14 @@ const CAPABILITY_EXAMPLES = [
   "What can you help me with?",
 ];
 
+// A payments-only merchant has no catalogue or stock, so its openers stay on payments.
+const PAYMENTS_ONLY_PROMPTS = [
+  "How are collections looking this week?",
+  "When am I busiest?",
+  "Any failed or pending payments?",
+  "Can you tell me what to restock?",
+];
+
 export default function PortalPage() {
   const {
     portalMessages,
@@ -58,7 +68,10 @@ export default function PortalPage() {
     startNewMerchantChat,
     selectMerchantChat,
     portalTurnActive,
+    session,
   } = useAppState();
+  const plan = paytmPlanFromMetadata(session?.user.app_metadata);
+  const prompts = plan === "pos" ? SUGGESTED_PROMPTS : PAYMENTS_ONLY_PROMPTS;
   const [memoryOpen, setMemoryOpen] = useState(false);
   const empty = portalMessages.length === 0;
   const scrollRef = useAutoScroll(portalMessages);
@@ -71,6 +84,7 @@ export default function PortalPage() {
         <main className="flex-1 min-w-0 flex flex-col bg-bg">
           <div className="flex-none px-6 pt-3">
             <div className="max-w-[720px] mx-auto flex items-center justify-end gap-2">
+              {plan === "pos" && <div className="mr-auto"><PaytmPlanBanner plan={plan} /></div>}
               <button onClick={() => setMemoryOpen(true)}
                 className="border border-border rounded-md px-2.5 py-1.5 text-[12px] text-ink-muted hover:border-accent hover:text-accent transition-colors">
                 ✦ Recovery &amp; lessons
@@ -97,8 +111,9 @@ export default function PortalPage() {
                       Ask about sales, inventory, or pricing. I read the store&apos;s own records and show the formula behind every figure. Anything I&apos;d change is queued on the right — I can propose it and nothing more; it applies only when you approve it.
                     </p>
                   </div>
+                  {plan === "payments" && <PaytmPlanBanner plan={plan} />}
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {SUGGESTED_PROMPTS.map((p) => (
+                    {prompts.map((p) => (
                       <button
                         key={p}
                         onClick={() => sendMerchantMessage(p)}
