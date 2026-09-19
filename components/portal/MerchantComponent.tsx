@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RenderedComponent, ClaimKind, MetricsPayload } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
 import { useAppState } from "@/lib/store/AppState";
+import { getVariantImageUrl } from "@/lib/productImage";
 
 /**
  * Renders one component the merchant agent emitted as a `ui` event.
@@ -147,7 +148,11 @@ function MetricsChart({
           </span>
         )}
 
-        {p.points.length > 0 && (
+        {p.points.length > 0 && (p.group_by === "product" || p.group_by === "variant") && (
+          <ProductSalesCards p={p} peak={peak} money={money} />
+        )}
+
+        {p.points.length > 0 && p.group_by !== "product" && p.group_by !== "variant" && (
           <div className="relative">
             {hovered && (
               <div className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full z-10 whitespace-nowrap bg-ink text-white text-[11px] rounded-md px-2 py-1 shadow-md">
@@ -197,6 +202,55 @@ function MetricsChart({
         </div>
       </div>
     </section>
+  );
+}
+
+/** A product or variant breakdown reads as the products themselves, each with its sales. */
+function ProductSalesCards({ p, peak, money }: { p: MetricsPayload; peak: number; money: boolean }) {
+  const total = p.total && p.total > 0 ? p.total : null;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {p.points.slice(0, 12).map((point, i) => (
+        <div
+          key={point.bucket_id ?? point.date}
+          className="border border-border rounded-lg overflow-hidden flex flex-col bg-white"
+        >
+          <div className="relative aspect-[4/3] bg-[#f3f1ec]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={getVariantImageUrl({ title: point.date }, 300)}
+              alt={point.date}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <span className="absolute top-1.5 left-1.5 font-mono text-[10px] bg-white/90 rounded px-1.5 py-0.5">
+              #{i + 1}
+            </span>
+          </div>
+          <div className="p-2.5 flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium leading-snug line-clamp-2">{point.date}</span>
+            <span className="font-mono text-[15px] font-medium leading-none">
+              {money ? formatMinor(point.value) : point.value}
+            </span>
+            <div className="h-1 rounded-full bg-border-soft overflow-hidden">
+              <div
+                className="h-full bg-accent/60"
+                style={{ width: `${Math.max(3, (Math.abs(point.value) / peak) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-ink-faint">
+              {[
+                typeof point.orders === "number" ? `${point.orders} order${point.orders === 1 ? "" : "s"}` : null,
+                typeof point.units === "number" ? `${point.units} unit${point.units === 1 ? "" : "s"}` : null,
+                total ? `${((point.value / total) * 100).toFixed(0)}% of total` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

@@ -324,7 +324,7 @@ export interface MetricsPayload {
   group_by: string | null;
   unit: string;
   origins: DataOrigin[];
-  points: { date: string; value: number; orders?: number }[];
+  points: { date: string; value: number; orders?: number; units?: number; bucket_id?: string }[];
   total: number | null;
   total_label: string | null;
   claim_kind: ClaimKind;
