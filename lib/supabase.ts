@@ -20,6 +20,8 @@ export const DEMO_IDENTITIES = [
   { label: "Ira Menon — shopper", email: "ira@example.com", password: "cartisan-demo-shopper" },
   { label: "Dev Rao — shopper", email: "dev@example.com", password: "cartisan-demo-shopper" },
   { label: "Maya Iyer — merchant operator", email: "maya@example.com", password: "cartisan-demo-operator" },
+  { label: "Priya — Paytm POS merchant", email: "pos.merchant@example.com", password: "cartisan-demo-operator" },
+  { label: "Ravi — Paytm QR-only merchant", email: "qr.merchant@example.com", password: "cartisan-demo-operator" },
 ];
 
 export async function accessToken(): Promise<string | null> {
