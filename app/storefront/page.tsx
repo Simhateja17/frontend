@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAppState } from "@/lib/store/AppState";
+import { api } from "@/lib/api";
 import { useAutoScroll } from "@/lib/useAutoScroll";
 import MessageList from "@/components/storefront/MessageList";
 import ChatInput from "@/components/storefront/ChatInput";
@@ -10,6 +11,7 @@ import PaymentPanel from "@/components/storefront/PaymentPanel";
 import ConversationSwitcher from "@/components/storefront/ConversationSwitcher";
 import CatalogBrowser from "@/components/storefront/CatalogBrowser";
 import RoleGate from "@/components/shared/RoleGate";
+import MemoryPanel from "@/components/storefront/memory/MemoryPanel";
 
 /** Typed out one at a time in the idle search bar, so the bar advertises what the assistant can do. */
 const EXAMPLES = [
@@ -33,6 +35,7 @@ export default function StorefrontPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [recoveryDetailsOpen, setRecoveryDetailsOpen] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
   const scrollRef = useAutoScroll(storeMessages);
 
   // Adding a line slides the cart in — the confirmation that the add landed. It is
@@ -98,13 +101,14 @@ export default function StorefrontPage() {
   return <RoleGate role="customer">
     <div className="h-full flex min-w-0 relative">
       <main className="flex-1 min-w-0 flex flex-col bg-bg relative">
-        <div className="flex-none flex justify-end px-4 py-2 border-b border-border-soft">
+        <div className="flex-none flex justify-end gap-4 px-4 py-2 border-b border-border-soft">
+          <button className="text-sm text-ink-muted hover:text-accent" onClick={() => setMemoryOpen(true)}>✦ What we remember</button>
           <button className="text-sm" onClick={() => setCartOpen(!cartOpen)} aria-expanded={cartOpen}>Your cart ({cartCount}) {cartOpen ? "−" : "+"}</button>
         </div>
 
         {/* The catalog owns the page. The assistant is a bar at the bottom until it is asked for. */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <CatalogBrowser onAsk={ask} />
+          <CatalogBrowser onAsk={ask} onOpenMemory={() => setMemoryOpen(true)} onOpenCart={() => setCartOpen(true)} />
           <div className="h-40" aria-hidden="true" />
         </div>
 
@@ -175,7 +179,7 @@ export default function StorefrontPage() {
           <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-5">
             <div className="max-w-[720px] mx-auto">
               {!storeMessages.length && <p className="text-sm text-ink-muted py-4">Ask for recommendations, compare products, or tell me what you need. Your conversation stays here as you browse.</p>}
-              <MessageList messages={storeMessages} /><StagePanel />
+              <MessageList messages={storeMessages} onFeedback={(rating, reason) => api.chatFeedback(shopperConversationId, rating, reason)} /><StagePanel />
               {recoveryDetailsOpen && <PaymentPanel />}
               {progress && <p role="status" className="text-xs text-ink-muted mt-2">{progress}</p>}
             </div>
@@ -189,6 +193,8 @@ export default function StorefrontPage() {
 
       {/* A real column, not an overlay: the page (and the assistant panel inside it) shrinks
           to make room, so the chat header controls stay reachable while the cart is open. */}
+      {memoryOpen && <MemoryPanel onClose={() => setMemoryOpen(false)} />}
+
       {cartOpen && (
         <div className="slide-in-right relative flex-none z-40 flex max-w-full shadow-[-8px_0_28px_#00000014]">
           <button aria-label="Close cart" onClick={() => setCartOpen(false)}

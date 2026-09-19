@@ -110,8 +110,8 @@ export function CheckoutStatusCard() {
           </span>
         </div>
         <span className="text-[13px] text-success-ink leading-relaxed">
-          Order <span className="font-mono">{order.order_id}</span> is confirmed. Razorpay
-          verified the payment for this exact order and amount.
+          Order <span className="font-mono">{order.order_id}</span> is confirmed. The payment
+          provider verified the payment for this exact order and amount.
         </span>
         <button
           onClick={dismissCheckout}
@@ -161,7 +161,7 @@ export function CheckoutStatusCard() {
           <span className="font-mono text-[10px] text-ink-faint tracking-wide">
             {declined ? "PAYMENT RETRY" : "CHECKOUT HANDOFF"}
           </span>
-          <span className="font-mono text-[10px] text-ink-faint">RAZORPAY · TEST</span>
+          <span className="font-mono text-[10px] text-ink-faint">NO PROVIDER CONNECTED</span>
         </div>
 
         {declined && (
@@ -215,7 +215,7 @@ export function CheckoutStatusCard() {
             onClick={() => paymentReturned(order.order_id)}
             className="w-full text-center bg-accent text-white border-none rounded-lg py-3 text-[14px] font-medium hover:bg-accent-hover transition-colors"
           >
-            Pay {formatMinor(order.total_minor)} via Razorpay
+            Pay {formatMinor(order.total_minor)} 
           </a>
         ) : (
           <button
@@ -250,8 +250,8 @@ export function CheckoutStatusCard() {
           {declined
             ? "That attempt failed. A new attempt starts fresh — nothing from the failed one carries over or gets charged twice."
             : awaiting
-              ? "Waiting on Razorpay to confirm this payment. We're checking automatically — no need to refresh."
-              : "Real Razorpay test-mode link. This order is marked paid only once Razorpay confirms this exact order and amount, and this page updates on its own once it does."}
+              ? "Waiting on the payment provider to confirm this payment. We're checking automatically — no need to refresh."
+              : "No payment provider is connected yet. This order is marked paid only once a provider confirms this exact order and amount, and this page updates on its own once it does."}
         </span>
       </div>
       <OrderProvenance order={order} />

@@ -5,10 +5,17 @@ import { ApiProduct, ProductDetails } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
 import { useAppState } from "@/lib/store/AppState";
 import { localProductImage } from "@/lib/productImage";
+import ForYouRow from "./memory/ForYouRow";
+import WelcomeCard from "./memory/WelcomeCard";
+import MemoryNotice from "./memory/MemoryNotice";
 
 const ICONS: Record<string, string> = { "Personal Audio": "♫", "Home Audio": "♫", "Power & Cables": "ϟ", Computing: "⌨", Wearables: "◷", "Smart Home": "⌂" };
 
-export default function CatalogBrowser({ onAsk }: { onAsk: (text: string) => void }) {
+export default function CatalogBrowser({ onAsk, onOpenMemory, onOpenCart }: {
+  onAsk: (text: string) => void;
+  onOpenMemory: () => void;
+  onOpenCart: () => void;
+}) {
   const { browsingVariantId, setBrowsingVariantId, addToCart, turnActive } = useAppState();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +33,13 @@ export default function CatalogBrowser({ onAsk }: { onAsk: (text: string) => voi
       .catch(e => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [reload]);
+  // How long a product stayed open is the signal; the backend decides whether it
+  // counts (a second look, or a long enough one). Sent when the shopper moves on.
+  useEffect(() => {
+    if (!browsingVariantId) return;
+    const opened = Date.now();
+    return () => { void api.memoryEvent("product_view", browsingVariantId, Date.now() - opened); };
+  }, [browsingVariantId]);
   useEffect(() => {
     if (!browsingVariantId) return;
     let active = true;
@@ -54,10 +68,14 @@ export default function CatalogBrowser({ onAsk }: { onAsk: (text: string) => voi
       <div className="my-5 rounded-xl border border-accent/30 bg-white p-4"><h2 className="font-semibold">A little help deciding?</h2><p className="text-sm text-ink-muted mt-1">Your shopping assistant knows which option you’re viewing.</p><div className="flex flex-wrap gap-2 mt-3">{["Is there a similar product for less?", "Is there a better product than this?", "Explain this product’s specifications"].map(text => <button key={text} disabled={turnActive} onClick={() => onAsk(text)} className="text-sm border border-border rounded-full px-3 py-2 hover:border-accent disabled:opacity-50">{text}</button>)}</div></div>
       <h2 className="font-semibold mb-3">Product details</h2>
       {detailError ? <p role="alert" className="text-danger">{detailError}</p> : !currentDetails ? <p role="status">Loading specifications…</p> : <><dl className="grid sm:grid-cols-2 gap-x-8">{Object.entries(currentDetails.specs).map(([key, value]) => <div key={key} className="flex justify-between gap-4 border-b border-border-soft py-2 text-sm"><dt className="capitalize text-ink-muted">{key.replaceAll("_", " ")}</dt><dd>{value}</dd></div>)}</dl>{currentDetails.requirements.map(r => <p key={r} className="text-sm mt-2 text-ink-muted">{r}</p>)}</>}
+      <ForYouRow title="You might also like" onSelect={select} refreshKey={browsingVariantId} limit={6} />
     </> : <>
+      <MemoryNotice onManage={onOpenMemory} />
+      <WelcomeCard onSelect={select} onOpenCart={onOpenCart} />
       <p className="text-xs uppercase tracking-widest text-accent">Cartisan / The connected shop</p><h1 className="text-3xl font-semibold tracking-tight mt-2">Find your next everyday essential.</h1><p className="text-sm text-ink-muted mt-2 mb-5">Browse the collection. Ask your assistant to compare, find a better price, or help you choose.</p>
       <div className="flex flex-wrap gap-2 mb-4"><input aria-label="Search products" placeholder="Search products or brands" value={query} onChange={e => setQuery(e.target.value)} className="min-w-0 flex-1 basis-48 border border-border rounded-lg px-3 py-2 bg-white" /><select aria-label="Category" value={category} onChange={e => setCategory(e.target.value)} className="max-w-full border border-border rounded-lg pl-3 pr-8 py-2 bg-white bg-no-repeat appearance-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23767671' stroke-width='1.6'%3E%3Cpath d='M5.5 7.5 10 12l4.5-4.5'/%3E%3C/svg%3E\")", backgroundPosition: "right 0.6rem center", backgroundSize: "14px" }}><option value="">All categories</option>{categories.map(c => <option key={c}>{c}</option>)}</select><select aria-label="Sort products" value={sort} onChange={e => setSort(e.target.value)} className="border border-border rounded-lg pl-3 pr-8 py-2 bg-white bg-no-repeat appearance-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23767671' stroke-width='1.6'%3E%3Cpath d='M5.5 7.5 10 12l4.5-4.5'/%3E%3C/svg%3E\")", backgroundPosition: "right 0.6rem center", backgroundSize: "14px" }}><option value="default">Featured order</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></div>
       {loading ? <p role="status">Loading the collection…</p> : error ? <div role="alert"><p>{error}</p><button className="text-accent mt-2" onClick={() => { setLoading(true); setReload(r => r + 1); }}>Try again</button></div> : <>
+        {!query && !category && <ForYouRow title="Picked for you" onSelect={select} refreshKey={browsingVariantId} />}
         <p className="text-xs text-ink-muted mb-3">{visible.length} products · Demo catalog</p>{!visible.length && <p className="py-8 text-ink-muted">No products match. Try another search or category.</p>}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">{visible.map((product, index) => <button key={product.product_id} className="text-left rounded-xl border border-border-soft bg-white overflow-hidden hover:border-accent transition-colors" onClick={() => select((product.variants.find(v => v.in_stock && v.price_minor === product.from_price_minor) ?? product.variants[0]).variant_id)}><div className="h-28 sm:h-36 bg-surface-muted grid place-items-center text-5xl text-accent overflow-hidden">{localProductImage(product.title) ? <img src={localProductImage(product.title)!} alt={product.title} className="w-full h-full object-cover" loading={index < 10 ? "eager" : "lazy"} fetchPriority={index < 10 ? "high" : "auto"} /> : <span aria-hidden="true">{ICONS[product.category ?? ""] ?? "◇"}</span>}</div><div className="p-3"><p className="text-[11px] text-ink-muted">{product.brand} · {product.category}</p><h2 className="font-medium text-sm mt-1">{product.title}</h2><p className="font-semibold mt-2">From {formatMinor(product.from_price_minor)}</p><p className="text-xs mt-1 text-ink-muted">{product.in_stock ? `${product.variants.length} options` : "Out of stock"}</p></div></button>)}</div>
       </>}

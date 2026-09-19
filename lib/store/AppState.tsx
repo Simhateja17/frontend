@@ -179,7 +179,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setAuthReady(true);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      setSession(next);
+      // Anything remembered while browsing as a guest moves to the account, one way.
+      // The backend is a no-op for operators and when there is no guest cookie.
+      if (event === "SIGNED_IN" && next) void api.memoryMerge();
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -661,6 +666,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (updated) {
         setCart(updated);
         setLastCartAddAt(Date.now());
+        void api.memoryEvent("add_to_cart", variantId);
       }
       refreshEvidence();
     },
@@ -671,7 +677,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     async (variantId: string) => {
       if (!session) return;
       const updated = await guarded(() => api.cartRemove(variantId));
-      if (updated) setCart(updated);
+      if (updated) {
+        setCart(updated);
+        void api.memoryEvent("remove_from_cart", variantId);
+      }
       refreshEvidence();
     },
     [session, guarded, refreshEvidence]

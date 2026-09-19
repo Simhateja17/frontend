@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import type { FeedbackReason } from "@/lib/api";
 import { ChatMessage, RenderedComponent, ToolTrace } from "@/lib/types";
 import AgentComponent from "./AgentComponent";
 import Markdown from "./Markdown";
@@ -12,9 +14,12 @@ import Markdown from "./Markdown";
 export default function MessageList({
   messages,
   renderComponent: Component = AgentComponent,
+  onFeedback,
 }: {
   messages: ChatMessage[];
   renderComponent?: (props: { component: RenderedComponent }) => React.ReactNode;
+  /** When set, finished agent replies get 👍/👎; the storefront passes it, the portal does not. */
+  onFeedback?: (rating: "up" | "down", reason?: FeedbackReason) => Promise<unknown>;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -56,6 +61,7 @@ export default function MessageList({
                     {m.error}
                   </div>
                 )}
+                {onFeedback && !m.typing && !m.error && m.text && <Feedback onFeedback={onFeedback} />}
               </div>
             </div>
           )}
@@ -102,5 +108,41 @@ function ToolTrail({ tools }: { tools: ToolTrace[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+const DOWN_REASONS: { reason: FeedbackReason; label: string }[] = [
+  { reason: "not_relevant", label: "Not relevant" },
+  { reason: "wrong_info", label: "Wrong info" },
+  { reason: "too_pushy", label: "Too pushy" },
+];
+
+/** A rating on one answer. It is joined to the turn's evidence server-side, and a 👎
+ * reason becomes a memory signal, so the assistant learns what did not help. */
+function Feedback({ onFeedback }: { onFeedback: (rating: "up" | "down", reason?: FeedbackReason) => Promise<unknown> }) {
+  const [state, setState] = useState<"idle" | "asking" | "done">("idle");
+  const send = (rating: "up" | "down", reason?: FeedbackReason) => {
+    setState("done");
+    void onFeedback(rating, reason).catch(() => {});
+  };
+  if (state === "done") return <span className="text-[11px] text-ink-faint">Thanks for the feedback</span>;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-ink-faint">
+      {state === "idle" ? (
+        <>
+          <button aria-label="Helpful" onClick={() => send("up", "helpful")} className="rounded px-1.5 py-0.5 hover:bg-surface-muted">👍</button>
+          <button aria-label="Not helpful" onClick={() => setState("asking")} className="rounded px-1.5 py-0.5 hover:bg-surface-muted">👎</button>
+        </>
+      ) : (
+        <>
+          <span>What was wrong?</span>
+          {DOWN_REASONS.map(({ reason, label }) => (
+            <button key={reason} onClick={() => send("down", reason)}
+              className="rounded-full border border-border px-2 py-0.5 hover:border-accent hover:text-accent">{label}</button>
+          ))}
+          <button onClick={() => send("down")} className="underline">Skip</button>
+        </>
+      )}
+    </div>
   );
 }

@@ -226,6 +226,12 @@ export const api = {
   demoRunId,
 
   me: () => req<Principal>("/me"),
+  /** Bind the Telegram account that asked the bot for `token` to this session. */
+  linkTelegram: (token: string) =>
+    req<{ linked: boolean; bot_kind: "shopping" | "merchant" }>("/channels/telegram/link", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
 
   catalog: () => req<ApiProduct[]>("/catalog"),
   productDetails: (variantId: string) => req<import("@/lib/types").ProductDetails>(`/catalog/variants/${encodeURIComponent(variantId)}`),
@@ -382,7 +388,81 @@ export const api = {
   // host-triggered by design, so the UI shows what is wrong and names the command
   // that fixes it (ADR 0005).
   recoveryQueue: () => req<RecoveryQueue>("/portal/recovery"),
+
+  // Memory (Cognee). Whose memory it is comes from the bearer token, or for a guest
+  // from an HTTP-only cookie the backend signs — so these calls include credentials
+  // and never name a subject. Memory is advisory: nothing here changes price, stock
+  // or the cart, and a failure is swallowed rather than shown as an error.
+  memoryEvent: (eventType: MemoryEventType, variantId: string, dwellMs?: number) =>
+    req<{ counted: boolean }>("/memory/events", {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ event_type: eventType, variant_id: variantId, dwell_ms: dwellMs ?? null }),
+    }).catch(() => null),
+  memoryPanel: () => req<MemoryPanel>("/memory/me", { credentials: "include" }),
+  memoryDeleteFact: (factId: string) =>
+    req<{ deleted: boolean }>(`/memory/me/facts/${encodeURIComponent(factId)}`, {
+      method: "DELETE", credentials: "include",
+    }),
+  memoryForgetEverything: () =>
+    req<{ forgotten: boolean }>("/memory/me", { method: "DELETE", credentials: "include" }),
+  memoryMerge: () =>
+    req<{ merged: boolean }>("/memory/merge", { method: "POST", credentials: "include" }).catch(() => null),
+  memorySuggestions: (limit = 8) =>
+    req<{ items: MemorySuggestion[]; basis: "memory" | "no_history" }>(
+      `/memory/suggestions?limit=${limit}`, { credentials: "include" }),
+  memoryWelcome: () => req<{ card: WelcomeCard | null }>("/memory/welcome", { credentials: "include" }),
+  chatFeedback: (conversationId: string, rating: "up" | "down", reason?: FeedbackReason) =>
+    req<{ id: string }>("/chat/feedback", {
+      method: "POST",
+      body: JSON.stringify({ conversation_id: conversationId, rating, reason: reason ?? null }),
+    }),
 };
+
+export type MemoryEventType =
+  | "product_view" | "add_to_cart" | "remove_from_cart" | "rejected_recommendation" | "suggestion_click";
+export type FeedbackReason = "not_relevant" | "wrong_info" | "too_pushy" | "helpful" | "other";
+
+export interface MemoryFactView {
+  id: string;
+  type: string;
+  key: string;
+  value: string;
+  source: string | null;
+  since: string;
+}
+
+export interface MemoryPanel {
+  subject_kind: "customer" | "guest";
+  facts: MemoryFactView[];
+  interests: {
+    top_categories: string[];
+    liked_brands: string[];
+    avoided_brands: string[];
+    price_band_minor: [number, number] | null;
+  };
+  explored: { variant_id: string; title: string; brand: string; category: string | null; signals: string[] }[];
+  notes: string[];
+  notice: string;
+}
+
+export interface MemorySuggestion {
+  variant_id: string;
+  product_id: string;
+  title: string;
+  brand: string;
+  category: string | null;
+  price_minor: number;
+  in_stock: boolean;
+  reason: string | null;
+}
+
+export interface WelcomeCard {
+  cart_line_count: number;
+  still_interested: { variant_id: string; title: string; brand: string; price_minor: number; in_stock: boolean }[];
+  picks: MemorySuggestion[];
+  devices: string[];
+}
 
 /** Build a query string from the params that were actually supplied. */
 function query(params: Record<string, string | number | undefined | null>): string {
