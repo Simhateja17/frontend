@@ -89,7 +89,7 @@ export default function CartSidebar() {
         </button>
         <span className="text-[11px] text-ink-faint text-center leading-relaxed">
           Adding to your cart holds nothing. Stock is reserved when you confirm, and
-          payment happens on the payment provider&apos;s own page — never through this app.
+          payment happens on the Paytm gateway&apos;s own page — never through this app.
         </span>
       </div>
     </aside>

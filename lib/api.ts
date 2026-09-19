@@ -233,6 +233,16 @@ export const api = {
       body: JSON.stringify({ token }),
     }),
 
+  // The simulated Paytm gateway's hosted page. A link id is the only key; the amount
+  // it collects comes from the backend's own payment attempt, never from the page.
+  simulatedPayment: (linkId: string) =>
+    req<SimulatedPayment>(`/pay/sim/${encodeURIComponent(linkId)}`),
+  submitSimulatedPayment: (linkId: string, method: SimulatedPaymentMethod, outcome: "success" | "failure") =>
+    req<{ ok: boolean; result: string; order_id?: string; order_status?: string }>(
+      `/pay/sim/${encodeURIComponent(linkId)}`,
+      { method: "POST", body: JSON.stringify({ method, outcome }) },
+    ),
+
   catalog: () => req<ApiProduct[]>("/catalog"),
   productDetails: (variantId: string) => req<import("@/lib/types").ProductDetails>(`/catalog/variants/${encodeURIComponent(variantId)}`),
 
@@ -531,4 +541,16 @@ export interface RecoveryPolicyView {
     redemption_rate: number;
   };
   bounds: Record<string, number>;
+}
+
+export type SimulatedPaymentMethod = "upi" | "wallet" | "credit" | "debit" | "net";
+
+export interface SimulatedPayment {
+  link_id: string;
+  order_id: string;
+  customer: string | null;
+  merchant: string;
+  amount_minor: number;
+  currency: string;
+  status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "expired";
 }
