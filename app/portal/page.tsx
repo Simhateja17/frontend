@@ -18,7 +18,7 @@ const SUGGESTED_PROMPTS = [
   "How are sales looking this week?",
   "Anything I should restock?",
   "What are shoppers unable to find?",
-  "How is the Monsoon Audio Push campaign doing?",
+  "How is the Festive Ethnic Push campaign doing?",
 ];
 
 // One example per thing the merchant agent can actually do — reading the snapshot,
@@ -26,25 +26,25 @@ const SUGGESTED_PROMPTS = [
 // applying) a price, restock, promotion, or campaign change — cycled in the input
 // as a live demonstration of scope. Every listing, category, and campaign named
 // here is real, checked against backend/marketplace_backend/seed/domain.py
-// (categories at lines 49-59, product lines at 70-330, campaigns at 370-375 —
-// "Monsoon Audio Push", "Smart Home Diwali", "Always-On Brand"); the catalog does
+// (see CATEGORIES, LINES and CAMPAIGNS —
+// "Festive Ethnic Push", "Stride Into Diwali", "Always-On Brand"); the catalog does
 // not include a "Noise Buds" listing or anything by that name.
 const CAPABILITY_EXAMPLES = [
   "How are sales looking this week?",
   "What's our revenue by category this month?",
-  "How is the Monsoon Audio Push campaign doing?",
-  "Show me our top-selling audio listings",
-  "Show me the listing for the Wireless Earbuds",
+  "How is the Festive Ethnic Push campaign doing?",
+  "Show me our top-selling footwear listings",
+  "Show me the listing for the Silk Saree",
   "Anything I should restock?",
   "What are shoppers unable to find?",
   "Any order issues I should know about?",
   "What's the pricing headroom on this listing?",
   "What changes are pending approval?",
   "Fix the title and description on this listing",
-  "Drop the price on the Wireless Mouse to ₹1,999",
-  "Restock the Fast Charger by 50 units",
-  "Run a 15% off promotion on Personal Audio this weekend",
-  "Start a campaign for the Smart Home listings",
+  "Drop the price on the Linen Shirt to ₹1,999",
+  "Restock the Leather Sneakers by 50 units",
+  "Run a 15% off promotion on Ethnic Wear this weekend",
+  "Start a campaign for the Activewear listings",
   "What can you help me with?",
 ];
 

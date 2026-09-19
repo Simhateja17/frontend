@@ -3,6 +3,38 @@
 // deterministic stock photo keyword — backend/scripts/seed_catalog.py sets image_label to
 // `item.upper()[:24]`, which this map is keyed on.
 const ITEM_IMAGE_KEYWORDS: Record<string, string> = {
+  // The seeded apparel lines (backend/marketplace_backend/seed/domain.py).
+  "OXFORD SHIRT": "oxford-shirt",
+  "LINEN SHIRT": "linen-shirt",
+  "POLO T-SHIRT": "polo-shirt",
+  "STRETCH CHINOS": "chinos",
+  "UNSTRUCTURED BLAZER": "blazer",
+  "WRAP DRESS": "dress",
+  "TAILORED TROUSERS": "trousers",
+  "SILK BLOUSE": "blouse",
+  "KNIT CARDIGAN": "cardigan",
+  "KURTA SET": "kurta",
+  "SILK SAREE": "saree",
+  "LEHENGA CHOLI": "lehenga",
+  "NEHRU JACKET": "nehru-jacket",
+  "DESIGNER BLOUSE": "saree-blouse",
+  "EMBROIDERED DUPATTA": "dupatta",
+  "SLIM JEANS": "jeans",
+  "TRAINING LEGGINGS": "leggings",
+  "SPORTS BRA": "sportswear",
+  "PERFORMANCE TEE": "sportswear",
+  "LEATHER SNEAKERS": "sneakers",
+  "SUEDE LOAFERS": "loafers",
+  "EMBROIDERED JUTTIS": "jutti",
+  "BLOCK HEELS": "heels",
+  "COMFORT INSOLES": "insoles",
+  "LEATHER BELT": "belt",
+  "BELT BUCKLE": "belt-buckle",
+  "WATCH STRAP": "watch-strap",
+  "LEATHER TOTE": "handbag",
+  "JHUMKA EARRINGS": "earrings",
+  "LEATHER CARE KIT": "shoe-polish",
+
   "WIRELESS EARBUDS": "earbuds",
   "FAST CHARGER": "usb-charger",
   "POWER BANK": "powerbank",
@@ -81,17 +113,9 @@ const ITEM_IMAGE_KEYWORDS: Record<string, string> = {
 // f"{brand} {edition} {line.name}"`), so a substring match is exact and needs no
 // fuzzy matching. Checked before any remote stock-photo fallback so these load
 // instantly from the same origin instead of round-tripping to loremflickr.
-const LOCAL_ITEM_IMAGES: [string, string][] = [
-  ["Wireless Earbuds", "/products/earbuds.jpeg"],
-  ["Sport Earbuds", "/products/earbuds.jpeg"],
-  ["Fast Charger", "/products/fast_charger.jpeg"],
-  ["USB-C Cable", "/products/usb_c_cable.webp"],
-  ["USB-C Dock", "/products/usb_c_dock.jpeg"],
-  ["Air Purifier", "/products/air_purifier.webp"],
-  ["Phone Case", "/products/phone_case.jpeg"],
-  ["Earbud Case", "/products/earbud_case.jpeg"],
-  ["Headphone Case", "/products/headphone_case.webp"],
-];
+// The earlier electronics photos no longer match any line; add apparel photos here
+// as `["Line Name", "/products/file.jpeg"]` when they exist.
+const LOCAL_ITEM_IMAGES: [string, string][] = [];
 
 /** A locally-hosted photo for this title, if we have one photographed. */
 export function localProductImage(title: string): string | null {
@@ -100,6 +124,15 @@ export function localProductImage(title: string): string | null {
 }
 
 const CATEGORY_FALLBACK_KEYWORDS: Record<string, string> = {
+  Menswear: "menswear",
+  Womenswear: "womenswear",
+  "Ethnic Wear": "saree",
+  "Ethnic Coordinates": "saree",
+  Denim: "jeans",
+  Activewear: "sportswear",
+  Footwear: "shoes",
+  Accessories: "fashion-accessories",
+  "Garment & Shoe Care": "shoe-polish",
   Electronics: "electronics",
   "Home & Kitchen": "kitchenware",
   Fashion: "apparel",

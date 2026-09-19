@@ -15,9 +15,9 @@ import MemoryPanel from "@/components/storefront/memory/MemoryPanel";
 
 /** Typed out one at a time in the idle search bar, so the bar advertises what the assistant can do. */
 const EXAMPLES = [
-  "Find me a good pair of headphones under ₹5,000",
-  "Compare the two air purifiers",
-  "What charger works with my laptop?",
+  "Find me a linen shirt under ₹3,000",
+  "Compare the two running shoes",
+  "Which blouse matches my Kanjeevaram saree?",
   "Show me something cheaper than this",
 ];
 
@@ -25,7 +25,7 @@ const EXAMPLES = [
 const OPENERS = [
   "What's popular right now?",
   "Help me choose a gift under ₹3,000",
-  "Compare the top two headphones",
+  "Put together a wedding guest outfit",
 ];
 
 export default function StorefrontPage() {
