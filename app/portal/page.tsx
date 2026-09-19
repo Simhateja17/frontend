@@ -21,6 +21,7 @@ const SUGGESTED_PROMPTS = [
   "Anything I should restock?",
   "What are shoppers unable to find?",
   "How is the Festive Ethnic Push campaign doing?",
+  "Diwali is in 3 weeks and I expect double sales. Can I afford to restock?",
 ];
 
 // One example per thing the merchant agent can actually do — reading the snapshot,

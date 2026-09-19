@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useAppState } from "@/lib/store/AppState";
 import type { DecisionReason } from "@/lib/api";
 import { MerchantChange, MerchantChangeStatus } from "@/lib/types";
-import { formatMinor } from "@/lib/format";
+import { fmtSide, kindLabel } from "@/lib/changeFormat";
+import LoanTermsCard from "@/components/portal/LoanTermsCard";
 
 /**
  * The approval surface.
@@ -19,9 +20,6 @@ import { formatMinor } from "@/lib/format";
  * had moved or a bound no longer held. Hiding that would leave an operator believing
  * they had changed something they had not.
  */
-const MONEY_KEYS = new Set(["amount_minor", "budget_minor", "min_subtotal_minor",
-  "min_cart_minor", "max_discount_minor", "monthly_budget_minor"]);
-
 // Why, in a word the assistant can learn from. Optional; it never decides anything.
 const REASONS: { code: DecisionReason; label: string }[] = [
   { code: "margin_too_low", label: "Margin too low" },
@@ -30,23 +28,6 @@ const REASONS: { code: DecisionReason; label: string }[] = [
   { code: "stock_risk", label: "Stock risk" },
   { code: "other", label: "Other" },
 ];
-
-function fmtValue(key: string, value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (MONEY_KEYS.has(key) && typeof value === "number") return formatMinor(value);
-  if (key === "units" && typeof value === "number") return value > 0 ? `+${value}` : String(value);
-  return String(value);
-}
-
-function fmtSide(doc: Record<string, unknown>): string {
-  const entries = Object.entries(doc);
-  if (entries.length === 0) return "new";
-  return entries.map(([k, v]) => `${k.replace(/_minor$/, "")}: ${fmtValue(k, v)}`).join(", ");
-}
-
-function kindLabel(kind: string): string {
-  return kind.split("_").map((w) => w[0]?.toUpperCase() + w.slice(1)).join(" ");
-}
 
 const BADGE: Record<MerchantChangeStatus, { text: string; tone: string }> = {
   pending: { text: "PENDING", tone: "text-ink-faint" },
@@ -88,11 +69,15 @@ function Row({ item }: { item: MerchantChange }) {
 
       {/* The exact documents the agent staged, which are the documents the host
           re-validates and writes. What is shown here is what gets approved. */}
-      <div className="flex items-center gap-2 text-[12.5px] flex-wrap">
-        <span className="text-ink-faint line-through">{fmtSide(item.before)}</span>
-        <span className="text-ink-faint">→</span>
-        <span className="font-medium text-ink">{fmtSide(item.after)}</span>
-      </div>
+      {item.kind === "loan_request" ? (
+        <LoanTermsCard before={item.before} after={item.after} />
+      ) : (
+        <div className="flex items-center gap-2 text-[12.5px] flex-wrap">
+          <span className="text-ink-faint line-through">{fmtSide(item.before)}</span>
+          <span className="text-ink-faint">→</span>
+          <span className="font-medium text-ink">{fmtSide(item.after)}</span>
+        </div>
+      )}
 
       <p className="m-0 text-[11.5px] text-ink-muted leading-relaxed">{item.rationale}</p>
 

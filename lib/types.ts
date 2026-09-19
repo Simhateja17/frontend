@@ -412,7 +412,9 @@ export type MerchantChangeKind =
   | "price_update"
   | "promotion"
   | "campaign"
-  | "listing_update";
+  | "listing_update"
+  | "recovery_policy"
+  | "loan_request";
 
 export interface MerchantApproval {
   id: string;

@@ -1,5 +1,7 @@
 "use client";
 
+import { fmtSide, kindLabel } from "@/lib/changeFormat";
+import LoanTermsCard from "@/components/portal/LoanTermsCard";
 import { useState } from "react";
 import { RenderedComponent, ClaimKind, MetricsPayload } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
@@ -92,18 +94,22 @@ export default function MerchantComponent({ component }: { component: RenderedCo
           <div className="bg-white border border-accent/40 rounded-xl p-4 flex flex-col gap-2.5">
             <div className="flex justify-between items-baseline gap-3">
               <span className="text-[13.5px] font-medium">
-                {p.kind.split("_").map((w) => w[0]?.toUpperCase() + w.slice(1)).join(" ")}
+                {kindLabel(p.kind)}
                 {p.target_id ? ` · ${p.target_id}` : ""}
               </span>
               <span className="flex-none font-mono text-[9.5px] tracking-wide text-ink-faint">
                 {p.status.toUpperCase()}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[13px] flex-wrap">
-              <span className="text-ink-faint line-through">{JSON.stringify(p.before)}</span>
-              <span className="text-ink-faint">→</span>
-              <span className="font-medium text-ink">{JSON.stringify(p.after)}</span>
-            </div>
+            {p.kind === "loan_request" ? (
+              <LoanTermsCard before={p.before} after={p.after} />
+            ) : (
+              <div className="flex items-center gap-2 text-[13px] flex-wrap">
+                <span className="text-ink-faint line-through">{fmtSide(p.before)}</span>
+                <span className="text-ink-faint">→</span>
+                <span className="font-medium text-ink">{fmtSide(p.after)}</span>
+              </div>
+            )}
             <p className="m-0 text-[12px] text-ink-muted leading-relaxed">{p.rationale}</p>
             {p.note && (
               <p className="m-0 text-[12px] text-[#3d3d39] leading-relaxed">{p.note}</p>
