@@ -14,7 +14,7 @@ const MONO = "var(--font-jetbrains-mono), monospace";
  * The simulated Paytm payment gateway's hosted checkout page.
  *
  * The storefront's "Pay" button opens this page in a new tab, the way it used to
- * open Razorpay's. Nothing here decides that an order is paid: pressing pay sends
+ * open the old provider's. Nothing here decides that an order is paid: pressing pay sends
  * the chosen method and outcome to the backend, which turns it into a provider
  * event and settles the order through the webhook processor. The storefront tab
  * notices on its own. No real money moves and no card details leave this page.

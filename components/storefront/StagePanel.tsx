@@ -56,7 +56,7 @@ export default function StagePanel() {
           disabled={confirmingCheckout}
           className="w-full bg-accent text-white border-none rounded-lg py-3 text-[14px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {confirmingCheckout ? "Opening Razorpay…" : `Pay ${formatMinor(stage.total_minor)} via Razorpay`}
+          {confirmingCheckout ? "Opening Paytm…" : `Pay ${formatMinor(stage.total_minor)} with Paytm`}
         </button>
         <button
           onClick={cancelStage}
@@ -67,7 +67,7 @@ export default function StagePanel() {
         </button>
         {checkoutError && <span className="text-[12px] text-danger">{checkoutError}</span>}
         <span className="text-[11px] text-ink-faint text-center leading-relaxed">
-          You’ll go straight to Razorpay. Your order is created and your items are held
+          You’ll go straight to Paytm. Your order is created and your items are held
           while you pay.
         </span>
       </div>

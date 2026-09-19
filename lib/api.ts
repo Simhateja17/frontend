@@ -310,7 +310,7 @@ export const api = {
   // A retry is a new attempt on the SAME order, never a second order.
   retryPayment: (orderId: string) =>
     req<PaymentHandoff>(`/orders/${encodeURIComponent(orderId)}/payment`, { method: "POST" }),
-  // Coming back from Razorpay proves the customer returned, and nothing more: it
+  // Coming back from Paytm proves the customer returned, and nothing more: it
   // moves the order to `payment_verification_pending` and waits for a verified
   // event. Never render this as paid (ADR 0013).
   paymentRedirectReturned: (orderId: string) =>

@@ -8,10 +8,10 @@ import OriginBadge from "@/components/shared/OriginBadge";
 import { OrderApi } from "@/lib/types";
 
 /**
- * The confirmed order and its Razorpay handoff.
+ * The confirmed order and its Paytm handoff.
  *
  * The rule this panel exists to hold: **only `order.paid` renders as paid.** Coming
- * back from Razorpay is not payment — it moves the order to
+ * back from Paytm is not payment — it moves the order to
  * `payment_verification_pending`, and the panel says exactly that until a verified
  * provider event proves the exact order, amount and reference were fully paid
  * (ADR 0013). A retry is a new attempt on the same order, never a second order.
@@ -74,7 +74,7 @@ export function CheckoutStatusCard() {
   const orderPaid = pollOrder?.paid;
   const orderStatus = pollOrder?.status;
   // While a payment is outstanding, poll for the webhook-verified outcome instead of
-  // waiting on the customer to click "I've paid — check the status". Razorpay confirms
+  // waiting on the customer to click "I've paid — check the status". Paytm confirms
   // asynchronously (ADR 0013), so this is the only way a failed or succeeded webhook
   // shows up here without a manual check. Stops the moment the order reaches a
   // terminal-for-the-panel state, and pauses while the tab is hidden.
@@ -195,7 +195,7 @@ export function CheckoutStatusCard() {
       </div>
 
       <div className="px-4 pb-4 flex flex-col gap-2">
-        {/* A declined attempt's link is dead at the provider — Razorpay itself would
+        {/* A declined attempt's link is dead at the provider — Paytm itself would
             show it as cancelled. So the primary action here is always a fresh
             attempt, not the old link; `retryPayment` opens a new attempt on the
             same order rather than a new order (ADR 0030). */}

@@ -5,7 +5,7 @@ import OriginBadge from "@/components/shared/OriginBadge";
 import { formatMinor } from "@/lib/format";
 
 /**
- * One journey, from the customer's request to the Razorpay evidence.
+ * One journey, from the customer's request to the Paytm evidence.
  *
  * This is the view the Phase 7 acceptance is actually about: a judge follows one
  * purchase — or one refusal — end to end, in order, without joining rows by eye.
@@ -19,7 +19,7 @@ const SOURCE_LABEL: Record<JourneyStepSource, string> = {
   tool: "Tool call",
   order: "Order",
   payment_attempt: "Payment",
-  provider_event: "Razorpay",
+  provider_event: "Paytm",
 };
 
 const SOURCE_STYLE: Record<JourneyStepSource, string> = {
@@ -78,14 +78,14 @@ function purchaseStory(steps: JourneyStep[]): StoryStep[] {
     const status = String(attempt.detail.status ?? "pending");
     story.push({
       label: status === "failed" ? "Payment needs another try" : status === "succeeded" ? "Payment received" : "Awaiting payment",
-      detail: status === "failed" ? String(attempt.detail.failure_reason ?? "The payment attempt failed without charging the order.") : "Razorpay test mode is handling this payment attempt.",
+      detail: status === "failed" ? String(attempt.detail.failure_reason ?? "The payment attempt failed without charging the order.") : "The Paytm gateway (simulated) is handling this payment attempt.",
       state: status === "failed" ? "problem" : status === "succeeded" ? "done" : "waiting",
     });
   }
   const paid = steps.find(step => step.source === "order" && step.detail.status === "paid");
   const verifying = steps.find(step => step.source === "order" && step.detail.status === "payment_verification_pending");
-  if (paid) story.push({ label: "Payment verified", detail: `Razorpay evidence matched this order and ${formatMinor(Number(paid.detail.amount_paid_minor ?? 0))} was verified.`, state: "done" });
-  else if (verifying) story.push({ label: "Verifying payment", detail: "The customer returned; Cartisan is waiting for verified Razorpay evidence.", state: "waiting" });
+  if (paid) story.push({ label: "Payment verified", detail: `Paytm evidence matched this order and ${formatMinor(Number(paid.detail.amount_paid_minor ?? 0))} was verified.`, state: "done" });
+  else if (verifying) story.push({ label: "Verifying payment", detail: "The customer returned; Cartisan is waiting for verified Paytm evidence.", state: "waiting" });
   return story;
 }
 

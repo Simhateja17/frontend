@@ -5,7 +5,7 @@ import { DataOrigin } from "@/lib/types";
  *
  * ADR 0032 asks that a reader never has to guess which kind of record they are
  * looking at: generated history, something a person did in the app just now, or
- * evidence that came from Razorpay test mode. Until Phase 7 that distinction was
+ * evidence that came from the simulated Paytm gateway. Until Phase 7 that distinction was
  * visible only in the merchant KPI strip, so an order and an audit row could be
  * read as the same kind of fact when they are not.
  *
@@ -24,9 +24,9 @@ const STYLES: Record<DataOrigin, { label: string; className: string; title: stri
     title: "Created by a person using this application.",
   },
   razorpay_test: {
-    label: "Razorpay test",
+    label: "Paytm (simulated)",
     className: "bg-upsell-bg text-upsell-ink border-upsell-border",
-    title: "Evidence that came from Razorpay test mode, or a named scenario pack.",
+    title: "Evidence that came from the simulated Paytm gateway, or a named scenario pack.",
   },
 };
 

@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Cartisan — Agentic Commerce",
-  description: "Razorpay AI Buildathon Track 1 — bounded, explainable, gated agentic commerce.",
+  description: "Paytm Hackathon — bounded, explainable, gated agentic commerce.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -184,7 +184,7 @@ function OperatorEvidencePage() {
           <option value="">All origins</option>
           <option value="seeded">Seeded</option>
           <option value="live_app">Live app</option>
-          <option value="razorpay_test">Razorpay test</option>
+          <option value="razorpay_test">Paytm (simulated)</option>
         </select>
         <input
           value={query}
@@ -314,7 +314,7 @@ function CustomerEvidencePage() {
           Every meaningful thing done on your account — what happened, why, and how it
           ended, including the refusals. These are your own records: the server filters
           to your verified principal, so nobody else&apos;s session appears here. Select a
-          row to follow its whole journey, from the request through to the Razorpay
+          row to follow its whole journey, from the request through to the Paytm
           evidence.
         </p>
       </div>

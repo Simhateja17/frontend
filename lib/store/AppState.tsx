@@ -443,7 +443,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // A checkout with nothing left to do — paid, cancelled, or expired — is a receipt,
   // not something that still needs the customer's attention. Leaving it on screen
   // is a courtesy that stops being one the moment the customer moves to a
-  // different conversation; a checkout still holding stock or waiting on Razorpay
+  // different conversation; a checkout still holding stock or waiting on Paytm
   // keeps following them, because that one is still real and still theirs to act on.
   const clearResolvedCheckout = useCallback(() => {
     setCheckout((current) => {
@@ -770,7 +770,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   /**
-   * The customer has left for Razorpay. Record that they went, which moves the order
+   * The customer has left for Paytm. Record that they went, which moves the order
    * to `payment_verification_pending` — a state that explicitly is NOT paid and that
    * only a verified provider event can advance (ADR 0013).
    */
@@ -784,7 +784,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   /**
-   * One tap that does both the customer's confirm (ADR 0012) and the Razorpay
+   * One tap that does both the customer's confirm (ADR 0012) and the Paytm
    * handoff: confirm still runs first and still creates the order and reserves
    * stock, this just opens the resulting pay_url immediately instead of making
    * the customer read a second screen and click again.
@@ -792,7 +792,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const confirmAndPay = useCallback(
     async (stageId: string) => {
       if (!session || confirmingCheckoutRef.current) return;
-      // Reserve the Razorpay tab while this click still has a browser user gesture.
+      // Reserve the Paytm tab while this click still has a browser user gesture.
       // Opening it only after the API request resolves is commonly blocked as a
       // popup. If the browser blocks new tabs, fall back to navigating this tab.
       const paymentWindow = window.open("about:blank", "_blank");
