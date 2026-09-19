@@ -7,7 +7,6 @@ import { useState } from "react";
 import { RenderedComponent, ClaimKind, MetricsPayload } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
 import { useAppState } from "@/lib/store/AppState";
-import { getVariantImageUrl } from "@/lib/productImage";
 
 /**
  * Renders one component the merchant agent emitted as a `ui` event.
@@ -218,7 +217,7 @@ function MetricsChart({
   );
 }
 
-/** A product or variant breakdown reads as the products themselves, each with its sales. */
+/** A product or variant breakdown, ranked, each with its sales. No product images. */
 function ProductSalesCards({ p, peak, money }: { p: MetricsPayload; peak: number; money: boolean }) {
   const total = p.total && p.total > 0 ? p.total : null;
   return (
@@ -228,20 +227,13 @@ function ProductSalesCards({ p, peak, money }: { p: MetricsPayload; peak: number
           key={point.bucket_id ?? point.date}
           className="border border-border rounded-lg overflow-hidden flex flex-col bg-white"
         >
-          <div className="relative aspect-[4/3] bg-[#f3f1ec]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={getVariantImageUrl({ title: point.date }, 300)}
-              alt={point.date}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <span className="absolute top-1.5 left-1.5 font-mono text-[10px] bg-white/90 rounded px-1.5 py-0.5">
-              #{i + 1}
-            </span>
-          </div>
           <div className="p-2.5 flex flex-col gap-1.5">
-            <span className="text-[12.5px] font-medium leading-snug line-clamp-2">{point.date}</span>
+            <div className="flex items-start gap-1.5">
+              <span className="flex-none font-mono text-[10px] text-ink-faint border border-border rounded px-1.5 py-0.5">
+                #{i + 1}
+              </span>
+              <span className="text-[12.5px] font-medium leading-snug line-clamp-2">{point.date}</span>
+            </div>
             <span className="font-mono text-[15px] font-medium leading-none">
               {money ? formatMinor(point.value) : point.value}
             </span>

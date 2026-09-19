@@ -17,7 +17,6 @@ import {
 } from "@/lib/types";
 import { api, ApiError, type DecisionReason } from "@/lib/api";
 import { uid } from "@/lib/format";
-import { preloadProductImages } from "@/lib/productImage";
 import { roleFromMetadata } from "@/lib/role-surface";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
@@ -591,12 +590,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
               break;
             }
 
-            // Not rendered — a partial frame already names the products the agent
-            // settled on, which is the earliest moment their photos can start
-            // downloading. By the time `turn_complete` releases the finished `ui`
-            // component, the images are in cache and the card lands whole.
             case "ui_partial":
-              preloadProductImages(event.data.payload);
               break;
 
             case "cart_update":

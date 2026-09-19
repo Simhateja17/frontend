@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { api, MemorySuggestion } from "@/lib/api";
 import { formatMinor } from "@/lib/format";
-import { localProductImage } from "@/lib/productImage";
 
 /**
  * "Picked for you" — catalogue rows the shopper's memory steered. Every card is a live,
@@ -54,12 +53,7 @@ export default function ForYouRow({
               ×
             </button>
             <button onClick={() => open(item)} className="block w-full text-left">
-              <div className="h-24 bg-surface-muted grid place-items-center text-3xl text-accent overflow-hidden">
-                {localProductImage(item.title)
-                  ? <img src={localProductImage(item.title)!} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-                  : <span aria-hidden="true">◇</span>}
-              </div>
-              <div className="p-3">
+              <div className="p-3 pr-8">
                 {item.reason && (
                   <p className="inline-block text-[10.5px] leading-snug rounded-full bg-success-bg border border-success-border text-success-ink px-2 py-0.5 mb-1.5">
                     {item.reason}

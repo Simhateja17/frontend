@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { PresentedCard } from "@/lib/types";
 import { useAppState } from "@/lib/store/AppState";
-import { getVariantImageUrl } from "@/lib/productImage";
 
 /**
  * One card the agent presented.
@@ -14,12 +12,9 @@ import { getVariantImageUrl } from "@/lib/productImage";
  * the card trustworthy (ADR 0020). A cross-sell is labelled as optional and is never
  * added on the customer's behalf (ADR 0007).
  */
-export default function PresentedCardView({ card, priority = false }: { card: PresentedCard; priority?: boolean }) {
+export default function PresentedCardView({ card }: { card: PresentedCard; priority?: boolean }) {
   const { addToCart } = useAppState();
-  const [imageFailed, setImageFailed] = useState(false);
   const [adding, setAdding] = useState(false);
-  const imageUrl = getVariantImageUrl({ title: card.title });
-  const isLocal = imageUrl.startsWith("/");
 
   const handleAdd = async () => {
     if (adding || !card.in_stock) return;
@@ -37,29 +32,6 @@ export default function PresentedCardView({ card, priority = false }: { card: Pr
         card.is_cross_sell ? "border-accent/40" : "border-border-soft"
       }`}
     >
-      <div
-        className="relative h-[104px] rounded-md bg-surface-muted border border-border-soft overflow-hidden flex items-center justify-center text-ink-faint font-mono text-[10px] tracking-wide"
-        role="img"
-        aria-label={card.title}
-      >
-        {imageFailed ? (
-          card.brand.toUpperCase()
-        ) : (
-          <Image
-            src={imageUrl}
-            alt={card.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 196px"
-            unoptimized={!isLocal}
-            className="object-cover"
-            loading={priority ? "eager" : "lazy"}
-            priority={priority}
-            fetchPriority={priority ? "high" : "auto"}
-            onError={() => setImageFailed(true)}
-          />
-        )}
-      </div>
-
       {card.is_cross_sell && (
         <span className="self-start font-mono text-[9.5px] tracking-wide text-accent border border-accent/40 rounded px-1.5 py-0.5">
           OPTIONAL PAIRING
