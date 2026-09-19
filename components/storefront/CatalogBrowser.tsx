@@ -1,54 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { api } from "@/lib/api";
 import { ApiProduct, ProductDetails } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
 import { useAppState } from "@/lib/store/AppState";
-import { getVariantImageUrl } from "@/lib/productImage";
+import { localProductImage } from "@/lib/productImage";
 import ForYouRow from "./memory/ForYouRow";
 import WelcomeCard from "./memory/WelcomeCard";
 import MemoryNotice from "./memory/MemoryNotice";
 import OfferBanner from "./memory/OfferBanner";
 
 const ICONS: Record<string, string> = { "Personal Audio": "♫", "Home Audio": "♫", "Power & Cables": "ϟ", Computing: "⌨", Wearables: "◷", "Smart Home": "⌂" };
-
-function CatalogProductImage({ title, category, priority = false, detailed = false }: {
-  title: string;
-  category: string | null;
-  priority?: boolean;
-  detailed?: boolean;
-}) {
-  const imageUrl = getVariantImageUrl({ title, category }, detailed ? 800 : 480);
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const imageFailed = failedUrl === imageUrl;
-
-  if (imageFailed) {
-    const icon = ICONS[category ?? ""] ?? "◇";
-    return detailed ? (
-      <div className="text-center p-8">
-        <span aria-hidden="true" className="text-7xl text-accent">{icon}</span>
-        <p className="text-sm mt-4 text-ink-muted">{category}</p>
-        <p className="text-xs text-ink-faint">Product image unavailable</p>
-      </div>
-    ) : <span aria-hidden="true">{icon}</span>;
-  }
-
-  return (
-    <Image
-      src={imageUrl}
-      alt={title}
-      width={detailed ? 800 : 480}
-      height={detailed ? 800 : 480}
-      unoptimized={!imageUrl.startsWith("/")}
-      className="w-full h-full object-cover"
-      loading={priority ? "eager" : "lazy"}
-      priority={priority}
-      fetchPriority={priority ? "high" : "auto"}
-      onError={() => setFailedUrl(imageUrl)}
-    />
-  );
-}
 
 export default function CatalogBrowser({ onAsk, onOpenMemory, onOpenCart }: {
   onAsk: (text: string) => void;
@@ -97,7 +59,7 @@ export default function CatalogBrowser({ onAsk, onOpenMemory, onOpenCart }: {
     {selected && variant ? <>
       <button className="text-sm text-accent mb-5" onClick={() => select(null)}>← Back to products</button>
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl bg-surface-muted min-h-48 grid place-items-center border border-border-soft overflow-hidden"><CatalogProductImage title={selected.title} category={selected.category} priority detailed /></div>
+        <div className="rounded-2xl bg-surface-muted min-h-48 grid place-items-center border border-border-soft overflow-hidden">{localProductImage(selected.title) ? <img src={localProductImage(selected.title)!} alt={selected.title} className="w-full h-full object-cover" /> : <div className="text-center p-8"><span aria-hidden="true" className="text-7xl text-accent">{ICONS[selected.category ?? ""] ?? "◇"}</span><p className="text-sm mt-4 text-ink-muted">{selected.category}</p><p className="text-xs text-ink-faint">Product image unavailable</p></div>}</div>
         <div><p className="text-xs uppercase tracking-widest text-ink-muted">{selected.brand}</p><h1 className="text-2xl font-semibold mt-2">{selected.title}</h1><p className="text-2xl font-semibold my-3">{formatMinor(variant.price_minor)}</p><p className="text-sm text-ink-muted leading-relaxed">{selected.description}</p>
           <label className="block text-sm mt-4">Choose an option<select className="block w-full mt-2 border border-border rounded-lg p-2 bg-white" value={variant.variant_id} onChange={e => select(e.target.value)}>{selected.variants.map(v => <option key={v.variant_id} value={v.variant_id}>{v.title} — {formatMinor(v.price_minor)}{v.in_stock ? "" : " (out of stock)"}</option>)}</select></label>
           <p className="text-sm mt-3 text-accent">{variant.in_stock ? "In stock" : "Out of stock"}</p>
@@ -117,7 +79,7 @@ export default function CatalogBrowser({ onAsk, onOpenMemory, onOpenCart }: {
       {loading ? <p role="status">Loading the collection…</p> : error ? <div role="alert"><p>{error}</p><button className="text-accent mt-2" onClick={() => { setLoading(true); setReload(r => r + 1); }}>Try again</button></div> : <>
         {!query && !category && <ForYouRow title="Picked for you" onSelect={select} refreshKey={browsingVariantId} />}
         <p className="text-xs text-ink-muted mb-3">{visible.length} products · Demo catalog</p>{!visible.length && <p className="py-8 text-ink-muted">No products match. Try another search or category.</p>}
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">{visible.map((product, index) => <button key={product.product_id} className="text-left rounded-xl border border-border-soft bg-white overflow-hidden hover:border-accent transition-colors" onClick={() => select((product.variants.find(v => v.in_stock && v.price_minor === product.from_price_minor) ?? product.variants[0]).variant_id)}><div className="h-28 sm:h-36 bg-surface-muted grid place-items-center text-5xl text-accent overflow-hidden"><CatalogProductImage title={product.title} category={product.category} priority={index < 10} /></div><div className="p-3"><p className="text-[11px] text-ink-muted">{product.brand} · {product.category}</p><h2 className="font-medium text-sm mt-1">{product.title}</h2><p className="font-semibold mt-2">From {formatMinor(product.from_price_minor)}</p><p className="text-xs mt-1 text-ink-muted">{product.in_stock ? `${product.variants.length} options` : "Out of stock"}</p></div></button>)}</div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">{visible.map((product, index) => <button key={product.product_id} className="text-left rounded-xl border border-border-soft bg-white overflow-hidden hover:border-accent transition-colors" onClick={() => select((product.variants.find(v => v.in_stock && v.price_minor === product.from_price_minor) ?? product.variants[0]).variant_id)}><div className="h-28 sm:h-36 bg-surface-muted grid place-items-center text-5xl text-accent overflow-hidden">{localProductImage(product.title) ? <img src={localProductImage(product.title)!} alt={product.title} className="w-full h-full object-cover" loading={index < 10 ? "eager" : "lazy"} fetchPriority={index < 10 ? "high" : "auto"} /> : <span aria-hidden="true">{ICONS[product.category ?? ""] ?? "◇"}</span>}</div><div className="p-3"><p className="text-[11px] text-ink-muted">{product.brand} · {product.category}</p><h2 className="font-medium text-sm mt-1">{product.title}</h2><p className="font-semibold mt-2">From {formatMinor(product.from_price_minor)}</p><p className="text-xs mt-1 text-ink-muted">{product.in_stock ? `${product.variants.length} options` : "Out of stock"}</p></div></button>)}</div>
       </>}
     </>}
   </section>;
