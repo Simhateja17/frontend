@@ -210,7 +210,37 @@ export type ComponentKind =
   // the storefront differ in which components they know, not in how they listen.
   | "digest"
   | "metrics"
-  | "change_preview";
+  | "change_preview"
+  | "payment_health"
+  | "restock_financing";
+
+export interface PaymentHealthPayload {
+  window_days: number;
+  verified_collections: string;
+  paid_orders: number;
+  awaiting_verification: string;
+  orders_by_status: Record<string, { orders: number; amount_minor: number }>;
+  stuck_orders: { order_id: string; status: string; amount: string; since: string }[];
+  failed_attempts: { reason: string; attempts: number }[];
+  daily_collections: { date: string; amount_minor: number }[];
+}
+
+export interface RestockFinancingPayload {
+  horizon_days: number;
+  demand_multiplier: number;
+  restock_lines: { variant_id: string; title: string; units_to_order: number; cost_minor: number }[];
+  restock_cost_estimate: string;
+  restock_cost_minor: number;
+  cash_last_7_days: string;
+  cash_last_7_days_minor: number;
+  shortfall: string;
+  shortfall_minor: number;
+  loan: null | {
+    suggested_amount: string;
+    eligible_limit: string;
+    monthly_repayment_at_6_months: string;
+  };
+}
 
 // A card the agent presented. `item_ref` is a server-issued, session-bound handle:
 // it is what a follow-up add names, and a variant id is not a substitute (ADR 0020).
@@ -361,7 +391,9 @@ export type ComponentPayload =
   | SuggestionsPayload
   | DigestPayload
   | MetricsPayload
-  | ChangePreviewPayload;
+  | ChangePreviewPayload
+  | PaymentHealthPayload
+  | RestockFinancingPayload;
 
 // One rendered component, tagged so the renderer can narrow the payload safely.
 export type RenderedComponent =
@@ -374,7 +406,9 @@ export type RenderedComponent =
   | { kind: "suggestions"; payload: SuggestionsPayload }
   | { kind: "digest"; payload: DigestPayload }
   | { kind: "metrics"; payload: MetricsPayload }
-  | { kind: "change_preview"; payload: ChangePreviewPayload };
+  | { kind: "change_preview"; payload: ChangePreviewPayload }
+  | { kind: "payment_health"; payload: PaymentHealthPayload }
+  | { kind: "restock_financing"; payload: RestockFinancingPayload };
 
 // A tool call the turn made, shown so a person can see what the agent actually did.
 export interface ToolTrace {

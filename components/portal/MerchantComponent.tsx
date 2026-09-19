@@ -2,6 +2,7 @@
 
 import { fmtSide, kindLabel } from "@/lib/changeFormat";
 import LoanTermsCard from "@/components/portal/LoanTermsCard";
+import { PaymentHealthCard, RestockFinancingCard } from "@/components/portal/FinanceCards";
 import { useState } from "react";
 import { RenderedComponent, ClaimKind, MetricsPayload } from "@/lib/types";
 import { formatMinor } from "@/lib/format";
@@ -86,6 +87,12 @@ export default function MerchantComponent({ component }: { component: RenderedCo
       const money = p.unit === "INR paise";
       return <MetricsChart p={p} peak={peak} money={money} />;
     }
+
+    case "payment_health":
+      return <PaymentHealthCard p={component.payload} />;
+
+    case "restock_financing":
+      return <RestockFinancingCard p={component.payload} />;
 
     case "change_preview": {
       const p = component.payload;

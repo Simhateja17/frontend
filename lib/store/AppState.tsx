@@ -53,7 +53,7 @@ const SHOPPING_COMPONENTS: ReadonlySet<ComponentKind> = new Set<ComponentKind>([
   "products", "comparison", "cart", "checkout", "order_status", "guide", "suggestions",
 ]);
 const MERCHANT_COMPONENTS: ReadonlySet<ComponentKind> = new Set<ComponentKind>([
-  "digest", "metrics", "change_preview", "suggestions",
+  "digest", "metrics", "change_preview", "suggestions", "payment_health", "restock_financing",
 ]);
 
 function asComponent(
